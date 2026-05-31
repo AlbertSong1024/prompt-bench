@@ -28,7 +28,7 @@ pip install prompt-bench
 ### From source
 
 ```bash
-git clone https://github.com/Alex-2Code/prompt-bench.git
+git clone https://github.com/AlbertSong1024/prompt-bench.git
 cd prompt-bench
 pip install -e .
 ```
@@ -256,8 +256,8 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 📧 Contact
 
-- GitHub: [@Alex-2Code](https://github.com/Alex-2Code)
+- GitHub: [@AlbertSong1024](https://github.com/AlbertSong1024)
 
 ---
 
-Made with ❤️ by [Alex-2Code](https://github.com/Alex-2Code)
+Made with ❤️ by [AlbertSong1024](https://github.com/AlbertSong1024)
