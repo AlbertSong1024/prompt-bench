@@ -294,3 +294,52 @@ def save_results_json(results: List[BenchmarkResult], output_path: str) -> None:
         json.dump(data, f, indent=2)
 
     console.print(f"[green]Results saved to {output_path}[/green]")
+
+
+def run_gemini_benchmark(
+    prompt: str,
+    model: str = "gemini-2.0-flash",
+    api_key: Optional[str] = None,
+    system_prompt: Optional[str] = None,
+) -> BenchmarkResult:
+    """Run benchmark using Google Gemini API."""
+    api_key = api_key or os.environ.get("GEMINI_API_KEY")
+    if not api_key:
+        return BenchmarkResult(
+            provider="gemini", model=model, prompt=prompt,
+            response="", input_tokens=0, output_tokens=0, total_tokens=0,
+            latency_ms=0, success=False, error="GEMINI_API_KEY not set",
+        )
+    
+    import time
+    start = time.time()
+    try:
+        url = f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent?key={api_key}"
+        contents = [{"role": "user", "parts": [{"text": prompt}]}]
+        if system_prompt:
+            contents.insert(0, {"role": "model", "parts": [{"text": system_prompt}]})
+        
+        payload = {"contents": contents, "generationConfig": {"temperature": 0.3}}
+        resp = requests.post(url, json=payload, timeout=60)
+        resp.raise_for_status()
+        data = resp.json()
+        
+        response_text = data["candidates"][0]["content"]["parts"][0]["text"]
+        usage = data.get("usageMetadata", {})
+        
+        return BenchmarkResult(
+            provider="gemini", model=model, prompt=prompt,
+            response=response_text,
+            input_tokens=usage.get("promptTokenCount", 0),
+            output_tokens=usage.get("candidatesTokenCount", 0),
+            total_tokens=usage.get("totalTokenCount", 0),
+            latency_ms=(time.time() - start) * 1000,
+            success=True,
+        )
+    except Exception as e:
+        return BenchmarkResult(
+            provider="gemini", model=model, prompt=prompt,
+            response="", input_tokens=0, output_tokens=0, total_tokens=0,
+            latency_ms=(time.time() - start) * 1000,
+            success=False, error=str(e),
+        )
